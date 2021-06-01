@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: my-app
+  name: my-Firstapp
   labels:
-    app: my-app
+    app: my-Firstapp
 spec:
   containers:
-    - name: my-app
-      image: sgupta0712/my-app:v1
+    - name: my-Firstapp
+      image: sgupta0712/my-Firstapp:v1
       ports:
         - containerPort: 8080
 
