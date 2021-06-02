@@ -2,7 +2,7 @@ pipeline {
 
     environment { 
 
-        registry = "sgupta0712/myweb_image" 
+        registry = "sgupta0712/hellowhale:latest" 
 
         registryCredential = 'dockerhub_id' 
 
