@@ -22,7 +22,7 @@ pipeline {
                 sshagent (credentials: ['dev-server']) {
 				    script{
 					    sh returnStatus: true, script: 'ssh ubuntu@13.126.143.0 docker rm -f my-Firstapp'
-						def runCmd = "docker run -d -p 8080:8080 --name=my-Firstapp kammana/nodeapp:${DOCKER_TAG}"
+						def runCmd = "docker run -d -p 8080:8080 --name=my-Firstapp sgupta0712/my-Firstapp:${DOCKER_TAG}"
 						sh "ssh -o StrictHostKeyChecking=no ubuntu@13.126.143.0 ${runCmd}"
 					}
 				}
