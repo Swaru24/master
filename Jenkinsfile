@@ -6,14 +6,14 @@ pipeline {
     stages{
         stage('Build Docker Image'){
             steps{
-                sh "docker build . -t sgupta0712/my-Firstapp:${DOCKER_TAG} "
+                sh "docker build . -t sgupta0712/my-firstapp:${DOCKER_TAG} "
             }
         }
         stage('DockerHub Push'){
             steps{
                 withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerHubPwd')]) {
                     sh "docker login -u sgupta0712 -p ${dockerHubPwd}"
-                    sh "docker push sgupta0712/my-Firstapp:${DOCKER_TAG}"
+                    sh "docker push sgupta0712/my-firstapp:${DOCKER_TAG}"
                 }
             }
         }
@@ -21,8 +21,8 @@ pipeline {
             steps{
                 sshagent (credentials: ['dev-server']) {
 				    script{
-					    sh returnStatus: true, script: 'ssh ubuntu@13.126.143.0 docker rm -f my-Firstapp'
-						def runCmd = "docker run -d -p 8080:8080 --name=my-Firstapp sgupta0712/my-Firstapp:${DOCKER_TAG}"
+					    sh returnStatus: true, script: 'ssh ubuntu@13.126.143.0 docker rm -f my-firstapp'
+						def runCmd = "docker run -d -p 8080:8080 --name=my-firstapp sgupta0712/my-firstapp:${DOCKER_TAG}"
 						sh "ssh -o StrictHostKeyChecking=no ubuntu@13.126.143.0 ${runCmd}"
 					}
 				}
