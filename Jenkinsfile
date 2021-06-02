@@ -1,37 +1,70 @@
-pipeline {
-    agent any
-    environment{
-        DOCKER_TAG = getDockerTag()
-    }
-    stages{
-        stage('Build Docker Image'){
-            steps{
-                sh "docker build . -t sgupta0712/my-firstapp:${DOCKER_TAG} "
-            }
-        }
-        stage('DockerHub Push'){
-            steps{
-                withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerHubPwd')]) {
-                    sh "docker login -u sgupta0712 -p ${dockerHubPwd}"
-                    sh "docker push sgupta0712/my-firstapp:${DOCKER_TAG}"
-                }
-            }
-        }
-        stage('Deploy to DevServer'){
-            steps{
-                sshagent (credentials: ['dev-server']) {
-				    script{
-					    sh returnStatus: true, script: 'ssh ubuntu@13.126.143.0 docker rm -f my-firstapp'
-						def runCmd = "docker run -d -p 8080:8080 --name=my-firstapp sgupta0712/my-firstapp:${DOCKER_TAG}"
-						sh "ssh -o StrictHostKeyChecking=no ubuntu@13.126.143.0 ${runCmd}"
-					}
-				}
-            }
-        }
-    }
-}
+pipeline { 
 
-def getDockerTag(){
-    def tag  = sh script: 'git rev-parse HEAD', returnStdout: true
-    return tag
+    environment { 
+
+        registry = "sgupta0712/myweb_image" 
+
+        registryCredential = 'dockerhub_id' 
+
+        dockerImage = '' 
+
+    }
+
+    agent any 
+
+    stages { 
+
+        stage('Cloning our Git') { 
+
+            steps { 
+
+                git 'https://github.com/Surbhi0712/master.git' 
+
+            }
+
+        } 
+
+        stage('Building our image') { 
+
+            steps { 
+
+                script { 
+
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER" 
+
+                }
+
+            } 
+
+        }
+
+        stage('Deploy our image') { 
+
+            steps { 
+
+                script { 
+
+                    docker.withRegistry( '', registryCredential ) { 
+
+                        dockerImage.push() 
+
+                    }
+
+                } 
+
+            }
+
+        } 
+        stage('Deploy App') {
+            steps {
+               script {
+                   kubernetesDeploy(configs: "pods.yml", kubeconfig(credentialsId: '1dfa946a-abd3-4e48-a2b3-c98c43d77327', serverUrl: 'https://127.0.0.1') {
+                      // some block
+                   }
+                )
+            }
+
+        }
+    }
 }
+    }   
