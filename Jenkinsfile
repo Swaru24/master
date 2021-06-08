@@ -12,7 +12,7 @@ node{
         withCredentials([string(credentialsId: 'DOCKER_HUB_CREDENTIALS', variable: 'DOCKER_HUB_CREDENTIALS')]) {
         sh "docker login -u sgupta0712 -p ${DOCKER_HUB_CREDENTIALS}"
     }
-        sh "docker push sgupta0712/hellowhale "
+        sh "docker push sgupta0712/myweb "
     }
     /** 
     stage("Deploy Application in K8S Cluster"){
