@@ -1,70 +1,34 @@
-pipeline { 
-
-    environment { 
-
-        registry = "sgupta0712/hellowhale:latest" 
-
-        registryCredential = 'dockerhub_id' 
-
-        dockerImage = '' 
-
+node{
+    
+    stage("Git Clone"){
+        git credentialsId: 'GIT_CREDENTIALS', url: 'https://github.com/Surbhi0712/master.git'
+    }
+    
+    stage("Build Docker image"){
+        sh "docker build -t sgupta0712/myweb ."
+    }
+    
+    stage("Docker Push"){
+        withCredentials([string(credentialsId: 'DOCKER_HUB_CREDENTIALS', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+        sh "docker login -u sgupta0712 -p ${DOCKER_HUB_CREDENTIALS}"
+    }
+        sh "docker push sgupta0712/hellowhale "
+    }
+    /** 
+    stage("Deploy Application in K8S Cluster"){
+         kubernetesDeploy(
+             configs: 'pods.yml',
+             kubeconfigId: 'KUBERNETES_CLUSTER_CONFIG',
+             enableConfigSubstitution: true
+             
+        )
+        
+    } 
+    **/
+    
+    stage("Deploy To kubernetes cluster"){
+        sh 'kubectl apply -f pods.yml'
     }
 
-    agent any 
-
-    stages { 
-
-        stage('Cloning our Git') { 
-
-            steps { 
-
-                git 'https://github.com/Surbhi0712/master.git' 
-
-            }
-
-        } 
-
-        stage('Building our image') { 
-
-            steps { 
-
-                script { 
-
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER" 
-
-                }
-
-            } 
-
-        }
-
-        stage('Deploy our image') { 
-
-            steps { 
-
-                script { 
-
-                    docker.withRegistry( '', registryCredential ) { 
-
-                        dockerImage.push() 
-
-                    }
-
-                } 
-
-            }
-
-        } 
-        stage('Deploy App') {
-            steps {
-               script {
-                   kubernetesDeploy(configs: "pods.yml", kubeconfig(credentialsId: '1dfa946a-abd3-4e48-a2b3-c98c43d77327', serverUrl: 'https://127.0.0.1') {
-                      // some block
-                   }
-                )
-            }
-
-        }
-    }
+    
 }
-    }   
